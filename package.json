@@ -1,0 +1,14 @@
+{
+  "name": "webServer",
+  "version": "0.0.1",
+  "description": "The app using express and node",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server"
+  },
+  "author": "Webber <bird23074035@gmail.com>",
+  "dependencies": {
+    "express": "^4.16.3",
+    "milligram": "^1.3.0"
+  }
+}

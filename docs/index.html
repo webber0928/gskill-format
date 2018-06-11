@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="wb">
+  <meta name="description" content="gskill format">
+  <title>gskill format.</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
+  <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+  <style>
+    input.hide, div.hide {
+      display: none;
+    }
+    textarea {
+      min-height: 20rem;
+    }
+    .fail {
+      border: 0.1rem solid red;
+      background: #ff00001a;
+    }
+    .safe {
+      border: 0.1rem solid green;
+      background: #00800012;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="row">
+      <div class="column">
+        <form>
+          <h3> Google Skill JSON Format </h3>
+          <fieldset>
+            <label for="commentField">Original</label>
+            <textarea rows="10" placeholder="{ ... }" id="commentField"></textarea>
+            <input class="button button-black button-outline analysis" type="button" value="Analysis">
+            <div id="result-box"></div>
+            <div class="float-right">
+              <input class="hide button button-black button-outline send" type="button" value="Send">
+            </div>
+            <div class="clearfix"></div>
+            <div class="hide">
+              <label for="commentField">Result</label>
+              <textarea rows="10" placeholder="..." id="resultField"></textarea>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
+  <script>
+    $(function() {
+      let commentField;
+
+      $('#commentField').val('{"id":"8c36e4d0-5b12-42aa-8e59-b6f77b89f184","name":"RebootDevice","auto":true,"contexts":[],"responses":[{"resetContexts":false,"affectedContexts":[{"name":"RebootDevice-followup","parameters":{},"lifespan":3}],"parameters":[{"id":"e81f2c04-4a62-41f8-860d-1464fd02c226","required":false,"dataType":"@sys.any","name":"DeviceName","value":"$DeviceName","isList":false}],"messages":[],"defaultResponsePlatforms":{},"speech":[]}],"priority":500000,"cortanaCommand":{"navigateOrService":"NAVIGATE","target":""},"webhookUsed":true,"webhookForSlotFilling":false,"lastUpdate":1526272679,"fallbackIntent":false,"events":[],"userSays":[{"id":"4754be31-954e-4bc2-9071-6861d49dccb4","data":[{"text":"reboot the "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"d390df36-403d-4c64-b7b9-1e776ad091e3","data":[{"text":"restart the "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"57f7f59e-c308-411e-bc17-dcd378f6ddd7","data":[{"text":"reboot "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"33ee5f42-c938-4b26-a465-ab9811e123b1","data":[{"text":"reboot my router"}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"1c2f593a-cf17-4d20-b182-4db776131f9f","data":[{"text":"restart my router"}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"3cfbafab-68c2-4f96-86f0-e5def4677ccf","data":[{"text":"restart "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false}],"followUpIntents":[],"templates":[]}');
+      $('.send').on('click', function(e){
+        $('#result-box input[type=text]').each(function(index) {
+          commentField.userSays[index].data[0];
+        });
+        $('#resultField').val(JSON.stringify(commentField));
+        $('div.hide').css('display', 'block');
+      });
+      $('.analysis').on('click', function(e){
+        e.preventDefault();
+        $('#result-box').html('');
+        try {
+          commentField = $.parseJSON($('#commentField').val());
+          $('#commentField').addClass('safe');
+          $('#result-box').append(`<h3>Intents: ${commentField.name}</h3>`);
+          _.forEach(commentField.userSays, function(obj, key){
+            let text1 = obj.data[0].text;
+            let text2;
+            if(obj.data[1]){
+              text2 = '${'+obj.data[1].text+'}';
+            }
+            $('#result-box').append(`
+              <label for="commentField${key}">${key+1}. ${text1}${text2}</label>
+              <input type="text" value="${text1}${text2}" id="commentField${key}">
+            `);
+          });
+          $('.send').css('display', 'inline-block');
+        } catch (error) {
+          $('#commentField').removeClass('safe');
+          $('#commentField').addClass('fail');
+          $('.send').css('display', 'none');
+          alert('String parse: 1 error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
