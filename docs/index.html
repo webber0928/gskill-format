@@ -80,6 +80,8 @@
             if(obj.data[1]){
               text2 = '${'+obj.data[1].text+'}';
             }
+            text2 = text2 || '';
+
             $('#result-box').append(`
               <label for="commentField${key}">${key+1}. ${text1}${text2}</label>
               <input type="text" value="${text1}${text2}" id="commentField${key}">
