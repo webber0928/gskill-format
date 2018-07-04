@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-tw">
 
 <head>
   <meta charset="utf-8">
@@ -39,7 +39,12 @@
             <label for="commentField">Original</label>
             <textarea rows="10" placeholder="{ ... }" id="commentField"></textarea>
             <input class="button button-black button-outline analysis" type="button" value="Analysis">
-            <div id="result-box"></div>
+            <div id="result-box" class="container">
+                <div class="row">
+                  <div class="column c1"></div>
+                  <div class="column c2"></div>
+                </div>
+            </div>
             <div class="float-right">
               <input class="hide button button-black button-outline send" type="button" value="Send">
             </div>
@@ -61,19 +66,30 @@
 
       $('#commentField').val('{"id":"8c36e4d0-5b12-42aa-8e59-b6f77b89f184","name":"RebootDevice","auto":true,"contexts":[],"responses":[{"resetContexts":false,"affectedContexts":[{"name":"RebootDevice-followup","parameters":{},"lifespan":3}],"parameters":[{"id":"e81f2c04-4a62-41f8-860d-1464fd02c226","required":false,"dataType":"@sys.any","name":"DeviceName","value":"$DeviceName","isList":false}],"messages":[],"defaultResponsePlatforms":{},"speech":[]}],"priority":500000,"cortanaCommand":{"navigateOrService":"NAVIGATE","target":""},"webhookUsed":true,"webhookForSlotFilling":false,"lastUpdate":1526272679,"fallbackIntent":false,"events":[],"userSays":[{"id":"4754be31-954e-4bc2-9071-6861d49dccb4","data":[{"text":"reboot the "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"d390df36-403d-4c64-b7b9-1e776ad091e3","data":[{"text":"restart the "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"57f7f59e-c308-411e-bc17-dcd378f6ddd7","data":[{"text":"reboot "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"33ee5f42-c938-4b26-a465-ab9811e123b1","data":[{"text":"reboot my router"}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"1c2f593a-cf17-4d20-b182-4db776131f9f","data":[{"text":"restart my router"}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"3cfbafab-68c2-4f96-86f0-e5def4677ccf","data":[{"text":"restart "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false}],"followUpIntents":[],"templates":[]}');
       $('.send').on('click', function(e){
-        $('#result-box input[type=text]').each(function(index) {
-          commentField.userSays[index].data[0];
-        });
+        let result = $('#c2-result').val();
+        let resultList = result.split('\n');
+        resultList.forEach(function(value, index){
+          if (!commentField.userSays[index]) { return; }
+          let text = value.replace('${DeviceName}', '');
+          commentField.userSays[index].data[0].text = text;
+        })
+        // $('#result-box input[type=text]').each(function(index) {
+        //   commentField.userSays[index].data[0];
+        // });
         $('#resultField').val(JSON.stringify(commentField));
         $('div.hide').css('display', 'block');
       });
+
       $('.analysis').on('click', function(e){
         e.preventDefault();
-        $('#result-box').html('');
+        $('#result-box .c1').html('');
+        $('#result-box .c2').html('');
         try {
           commentField = $.parseJSON($('#commentField').val());
           $('#commentField').addClass('safe');
-          $('#result-box').append(`<h3>Intents: ${commentField.name}</h3>`);
+          $('#result-box .c1').append(`<h3>Intents: ${commentField.name}</h3>`);
+          $('#result-box .c2').append(`<h3>Intents: ${commentField.name}</h3>`);
+          let c2Text = '';
           _.forEach(commentField.userSays, function(obj, key){
             let text1 = obj.data[0].text;
             let text2;
@@ -82,11 +98,21 @@
             }
             text2 = text2 || '';
 
-            $('#result-box').append(`
+            $('#result-box .c1').append(`
               <label for="commentField${key}">${key+1}. ${text1}${text2}</label>
-              <input type="text" value="${text1}${text2}" id="commentField${key}">
+              <input type="text" value="${text1}${text2}" class="hide" id="commentField${key}">
             `);
+            c2Text = `${c2Text}${text1}${text2}\n`;
           });
+
+          // let c2Text = '';
+          console.log(typeof c2Text, 'L100')
+
+          $('#result-box .c2').append(`
+            <textarea rows="10" placeholder="..." id="c2-result"></textarea>
+          `);
+          $('#c2-result').val(c2Text);
+          
           $('.send').css('display', 'inline-block');
         } catch (error) {
           $('#commentField').removeClass('safe');
