@@ -70,7 +70,7 @@
         let resultList = result.split('\n');
         resultList.forEach(function(value, index){
           if (!commentField.userSays[index]) { return; }
-          let text = value.replace('${DeviceName}', '');
+          let text = value.replace('${DeviceName}', '').replace('{RouterName}', '');
           commentField.userSays[index].data[0].text = text;
         })
         // $('#result-box input[type=text]').each(function(index) {
@@ -106,13 +106,13 @@
           });
 
           // let c2Text = '';
-          console.log(typeof c2Text, 'L100')
+          // console.log(typeof c2Text, 'L100')
 
           $('#result-box .c2').append(`
             <textarea rows="10" placeholder="..." id="c2-result"></textarea>
           `);
           $('#c2-result').val(c2Text);
-          
+
           $('.send').css('display', 'inline-block');
         } catch (error) {
           $('#commentField').removeClass('safe');
