@@ -61,18 +61,67 @@
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
   <script>
+
+    Array.prototype.notempty = function(){
+      for(var i=0; i<this.length; i++){
+        if(this[i] === "" || typeof(this[i]) == "undefined"){
+          this.splice(i,1);
+          i--;
+        }
+      }
+      return this;
+    };
+
     $(function() {
       let commentField;
 
       $('#commentField').val('{"id":"8c36e4d0-5b12-42aa-8e59-b6f77b89f184","name":"RebootDevice","auto":true,"contexts":[],"responses":[{"resetContexts":false,"affectedContexts":[{"name":"RebootDevice-followup","parameters":{},"lifespan":3}],"parameters":[{"id":"e81f2c04-4a62-41f8-860d-1464fd02c226","required":false,"dataType":"@sys.any","name":"DeviceName","value":"$DeviceName","isList":false}],"messages":[],"defaultResponsePlatforms":{},"speech":[]}],"priority":500000,"cortanaCommand":{"navigateOrService":"NAVIGATE","target":""},"webhookUsed":true,"webhookForSlotFilling":false,"lastUpdate":1526272679,"fallbackIntent":false,"events":[],"userSays":[{"id":"4754be31-954e-4bc2-9071-6861d49dccb4","data":[{"text":"reboot the "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"d390df36-403d-4c64-b7b9-1e776ad091e3","data":[{"text":"restart the "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"57f7f59e-c308-411e-bc17-dcd378f6ddd7","data":[{"text":"reboot "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"33ee5f42-c938-4b26-a465-ab9811e123b1","data":[{"text":"reboot my router"}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"1c2f593a-cf17-4d20-b182-4db776131f9f","data":[{"text":"restart my router"}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false},{"id":"3cfbafab-68c2-4f96-86f0-e5def4677ccf","data":[{"text":"restart "},{"text":"DeviceName","alias":"DeviceName","meta":"@sys.any","userDefined":true}],"isTemplate":false,"count":0,"updated":1526272679,"isAuto":false}],"followUpIntents":[],"templates":[]}');
       $('.send').on('click', function(e){
         let result = $('#c2-result').val();
-        let resultList = result.split('\n');
+        let resultList = result.split('\n').notempty();
         resultList.forEach(function(value, index){
           if (!commentField.userSays[index]) { return; }
-          let text = value.replace('${DeviceName}', '').replace('{RouterName}', '');
-          commentField.userSays[index].data[0].text = text;
+          let hasDeviceName = value.indexOf('${DeviceName}') > 0;
+          let hasRouterName = value.indexOf('{RouterName}') > 0;
+
+          if (hasDeviceName) {
+            let rl = value.split('${DeviceName}');
+            let rlLength = rl.length;
+            commentField.userSays[index].data[0].text = rl[0];
+            commentField.userSays[index].data[1] = {
+              "text": "DeviceName",
+              "alias": "DeviceName",
+              "meta": "@sys.any",
+              "userDefined": true
+            };
+            if (rl[1]) {
+              commentField.userSays[index].data[2].text = rl[1];
+            }
+            return;
+          }
+
+          if (hasRouterName) {
+            let rl = value.split('{RouterName}');
+            let rlLength = rl.length;
+            commentField.userSays[index].data[0].text = rl[0];
+            commentField.userSays[index].data[1] = {
+              "text": "DeviceName",
+              "alias": "DeviceName",
+              "meta": "@sys.any",
+              "userDefined": true
+            };
+            if (rl[1]) {
+              commentField.userSays[index].data[2].text = rl[1];
+            }
+            return;
+          }
+
+          commentField.userSays[index].data = [
+            {text: value}
+          ];
+          return;
         })
+
         // $('#result-box input[type=text]').each(function(index) {
         //   commentField.userSays[index].data[0];
         // });
